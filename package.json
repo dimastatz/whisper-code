@@ -1,0 +1,56 @@
+{
+  "name": "whisper-code",
+  "displayName": "Whisper Code",
+  "description": "Real-time voice dictation for VS Code, powered by local Whisper.",
+  "version": "0.0.1",
+  "publisher": "dimastatz",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dimastatz/whisper-code"
+  },
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "whisperCode.toggleDictation",
+        "title": "Toggle Dictation",
+        "category": "Whisper Code"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "whisperCode.toggleDictation",
+        "key": "ctrl+alt+d",
+        "mac": "cmd+alt+d"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.95.0",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^3.1.0",
+    "eslint": "^9.25.1",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.31.1"
+  }
+}
