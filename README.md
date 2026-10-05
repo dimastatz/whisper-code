@@ -31,7 +31,12 @@ npm install
 Then open the folder in VS Code and press **F5**. A new **Extension Development Host**
 window opens with the extension loaded; try the shortcut there.
 
-### Install as a VSIX
+### Install a release
+
+Download the `.vsix` from the [latest release](https://github.com/dimastatz/whisper-code/releases)
+and run `code --install-extension whisper-code-<version>.vsix`.
+
+### Build and install a VSIX
 
 ```sh
 npx @vscode/vsce package          # produces whisper-code-<version>.vsix
