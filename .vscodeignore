@@ -1,0 +1,12 @@
+.vscode/**
+.vscode-test/**
+src/**
+docs/**
+out/test/**
+**/*.map
+**/*.ts
+.gitignore
+eslint.config.mjs
+.vscode-test.mjs
+tsconfig.json
+CLAUDE.md
