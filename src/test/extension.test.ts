@@ -5,6 +5,12 @@ import { deactivate, isRecording } from "../extension";
 const TOGGLE = "whisperCode.toggleDictation";
 
 suite("Extension", () => {
+  suiteSetup(async () => {
+    const extension = vscode.extensions.getExtension("dimastatz.whisper-code");
+    assert.ok(extension, "extension not found");
+    await extension.activate();
+  });
+
   teardown(async () => {
     if (isRecording()) {
       await vscode.commands.executeCommand(TOGGLE);
