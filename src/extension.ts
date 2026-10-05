@@ -15,7 +15,9 @@ export function activate(context: vscode.ExtensionContext) {
   );
 }
 
-export function deactivate() {}
+export function deactivate() {
+  // Nothing to clean up yet; disposables are released via context.subscriptions.
+}
 
 export function isRecording(): boolean {
   return recording;

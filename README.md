@@ -1,4 +1,5 @@
 # whisper-code
+
 Real-time voice dictation for VS Code, powered by local Whisper. Biases transcription with your workspace symbols so it spells useMemo right, and adapts to whether you're dictating a comment, a commit message, or a prompt.
 
 > **Status: early development.** The extension installs and the dictation command and
@@ -7,11 +8,11 @@ Real-time voice dictation for VS Code, powered by local Whisper. Biases transcri
 
 ## Usage
 
-| Action | How |
-|---|---|
+| Action                 | How                                                                                                                     |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | Start / stop dictation | Press <kbd>Cmd</kbd>+<kbd>Alt</kbd>+<kbd>D</kbd> (macOS) or <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>D</kbd> (Windows/Linux) |
-| | Or click the microphone **Dictate** item in the status bar |
-| | Or run **Whisper Code: Toggle Dictation** from the Command Palette |
+|                        | Or click the microphone **Dictate** item in the status bar                                                              |
+|                        | Or run **Whisper Code: Toggle Dictation** from the Command Palette                                                      |
 
 While dictating, the status bar item changes to **Dictating**. Toggle again to stop.
 
@@ -40,11 +41,13 @@ code --install-extension whisper-code-*.vsix
 ## Development
 
 ```sh
-npm run compile   # build to out/
-npm run watch     # rebuild on change
-npm run lint      # eslint
-npm test          # compile, lint, and run tests inside VS Code
+npm run compile        # build to out/
+npm run watch          # rebuild on change
+npm run format         # format with Prettier
+npm run check          # format check, lint, typecheck, tests with 95% coverage gate
 ```
+
+Every pull request runs the same checks in GitHub Actions, plus CodeQL security analysis.
 
 Design docs live in [docs/specs](docs/specs). See [CLAUDE.md](CLAUDE.md) for contributor
 and agent conventions.

@@ -17,7 +17,8 @@ locally running Whisper model. Two features distinguish it from generic dictatio
 ## Stack
 
 - TypeScript VS Code extension (Node), compiled with `tsc` to `out/`.
-- Lint: ESLint 9 flat config with `typescript-eslint` (`eslint.config.mjs`).
+- Lint: ESLint 9 flat config with type-aware `typescript-eslint` `strictTypeChecked` +
+  `stylisticTypeChecked` (`eslint.config.mjs`). Format: Prettier (`.prettierrc.json`).
 - Tests: Mocha via `@vscode/test-cli` / `@vscode/test-electron`; they run inside a
   downloaded VS Code instance (cached in `.vscode-test/`, git-ignored).
 - Whisper inference runs **locally** — do not introduce cloud speech-to-text services
@@ -26,11 +27,15 @@ locally running Whisper model. Two features distinguish it from generic dictatio
 ## Commands
 
 ```sh
-npm install        # install dependencies
-npm run compile    # build to out/
-npm run watch      # incremental build
-npm run lint       # eslint src
-npm test           # compile + lint + run tests in VS Code
+npm install            # install dependencies
+npm run compile        # build to out/
+npm run watch          # incremental build
+npm run format         # prettier --write
+npm run lint           # type-aware eslint
+npm run typecheck      # tsc --noEmit
+npm test               # compile + run tests in VS Code
+npm run test:coverage  # tests + coverage gate (95% lines/statements/functions/branches)
+npm run check          # everything CI runs
 ```
 
 Press **F5** in VS Code ("Run Extension") to launch the Extension Development Host.
@@ -46,5 +51,9 @@ Press **F5** in VS Code ("Run Extension") to launch the Extension Development Ho
 ## Working conventions
 
 - Keep the README user-facing; put contributor/agent detail here.
-- Run `npm test` before opening a PR.
+- Run `npm run check` before opening a PR. CI (`.github/workflows/ci.yml`) runs the
+  same gates on every PR; CodeQL (`codeql.yml`) runs security analysis.
+- Keep coverage at or above 95%: add tests with new code rather than excluding files.
+- Logic that doesn't need the `vscode` API should live in plain modules so it can be
+  tested directly.
 - Commit on a feature branch and open a PR against `main`; don't push directly to `main`.

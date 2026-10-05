@@ -39,9 +39,15 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "pretest": "npm run compile && npm run lint",
-    "lint": "eslint src",
-    "test": "vscode-test"
+    "typecheck": "tsc --noEmit -p ./",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "pretest": "npm run compile",
+    "test": "vscode-test",
+    "pretest:coverage": "npm run compile",
+    "test:coverage": "vscode-test --coverage --coverage-reporter text --coverage-reporter json-summary --coverage-reporter lcov --coverage-output coverage && node scripts/check-coverage.mjs 95",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm run test:coverage"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
@@ -50,6 +56,7 @@
     "@vscode/test-cli": "^0.0.15",
     "@vscode/test-electron": "^3.1.0",
     "eslint": "^9.25.1",
+    "prettier": "^3.9.9",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.31.1"
   }
