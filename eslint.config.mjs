@@ -1,15 +1,20 @@
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["out/**"] },
-  ...tseslint.configs.recommended,
+  { ignores: ["out/**", "coverage/**", ".vscode-test/**", "**/*.mjs"] },
+  ...tseslint.configs.strictTypeChecked,
+  ...tseslint.configs.stylisticTypeChecked,
   {
-    files: ["src/**/*.ts"],
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
     rules: {
-      curly: "warn",
-      eqeqeq: "warn",
-      "no-throw-literal": "warn",
-      semi: "warn",
+      curly: "error",
+      eqeqeq: "error",
+      "no-throw-literal": "error",
     },
   },
 );

@@ -24,7 +24,7 @@ for the place where the user is dictating.
 ## Non-goals
 
 - Cloud speech-to-text providers.
-- Voice *commands* that drive the editor (navigation, refactoring). Dictation only.
+- Voice _commands_ that drive the editor (navigation, refactoring). Dictation only.
 - Languages other than English (for the first version).
 
 ## User experience
@@ -43,14 +43,14 @@ Microphone ─▶ Audio capture ─▶ Whisper (local) ─▶ Post-processor ─
                      Workspace symbol index      Context detector
 ```
 
-| Component | Responsibility |
-|---|---|
-| Audio capture | Records the microphone and chunks audio for streaming inference. |
-| Whisper runner | Runs the local model (e.g. whisper.cpp) on audio chunks. |
-| Symbol index | Collects identifiers from the workspace and builds the initial prompt. |
-| Context detector | Decides the target: comment, commit message, or prompt. |
-| Post-processor | Applies target-specific formatting (casing, punctuation, wrapping). |
-| Editor integration | Inserts and updates text, and shows status. |
+| Component          | Responsibility                                                         |
+| ------------------ | ---------------------------------------------------------------------- |
+| Audio capture      | Records the microphone and chunks audio for streaming inference.       |
+| Whisper runner     | Runs the local model (e.g. whisper.cpp) on audio chunks.               |
+| Symbol index       | Collects identifiers from the workspace and builds the initial prompt. |
+| Context detector   | Decides the target: comment, commit message, or prompt.                |
+| Post-processor     | Applies target-specific formatting (casing, punctuation, wrapping).    |
+| Editor integration | Inserts and updates text, and shows status.                            |
 
 ## Open questions
 
