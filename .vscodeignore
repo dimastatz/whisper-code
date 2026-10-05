@@ -10,3 +10,8 @@ eslint.config.mjs
 .vscode-test.mjs
 tsconfig.json
 CLAUDE.md
+coverage/**
+scripts/**
+.github/**
+.prettierrc.json
+.prettierignore
