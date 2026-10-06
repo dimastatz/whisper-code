@@ -12,7 +12,9 @@ for the place where the user is dictating.
 
 ## Goals
 
-1. **Local-only transcription.** Audio and workspace content never leave the machine.
+1. **Self-hosted transcription.** Audio goes only to a [whisper-flow](https://github.com/dimastatz/whisper-flow)
+   server the user configures (default `localhost`). No third-party cloud STT. Updated by
+   [spec 0002](0002-whisper-flow-transcription.md).
 2. **Workspace-aware vocabulary.** Code identifiers (e.g. `useMemo`, `getUserById`) are
    spelled correctly by feeding workspace symbols to Whisper as a prompt/bias.
 3. **Context-aware output.** Formatting adapts to the insertion target:
@@ -38,7 +40,7 @@ for the place where the user is dictating.
 ## Architecture (proposed)
 
 ```
-Microphone ─▶ Audio capture ─▶ Whisper (local) ─▶ Post-processor ─▶ Editor insert
+Microphone ─▶ Audio capture ─▶ whisper-flow    ─▶ Post-processor ─▶ Editor insert
                                    ▲                    ▲
                      Workspace symbol index      Context detector
 ```
@@ -46,7 +48,7 @@ Microphone ─▶ Audio capture ─▶ Whisper (local) ─▶ Post-processor ─
 | Component          | Responsibility                                                         |
 | ------------------ | ---------------------------------------------------------------------- |
 | Audio capture      | Records the microphone and chunks audio for streaming inference.       |
-| Whisper runner     | Runs the local model (e.g. whisper.cpp) on audio chunks.               |
+| whisper-flow       | Streams PCM to a whisper-flow server and receives partial/final text.  |
 | Symbol index       | Collects identifiers from the workspace and builds the initial prompt. |
 | Context detector   | Decides the target: comment, commit message, or prompt.                |
 | Post-processor     | Applies target-specific formatting (casing, punctuation, wrapping).    |
@@ -54,8 +56,8 @@ Microphone ─▶ Audio capture ─▶ Whisper (local) ─▶ Post-processor ─
 
 ## Open questions
 
-- Which Whisper runtime: whisper.cpp binary, Node bindings, or a sidecar process?
-- How do we capture the microphone from a VS Code extension (native helper vs. webview)?
-- Which model size is the default, and how is the model downloaded and stored?
+- ~~Which Whisper runtime?~~ Resolved: whisper-flow ([spec 0002](0002-whisper-flow-transcription.md)).
+- ~~Native helper or webview for the microphone?~~ Resolved: sidecar process (spec 0002, AU-3).
+- Which model should we recommend running in whisper-flow for code dictation?
 - How many symbols fit in Whisper's prompt window, and how do we rank them?
 - How do we detect the commit-message and chat-input targets reliably?
