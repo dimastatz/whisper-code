@@ -1,6 +1,6 @@
 # whisper-code
 
-Real-time voice dictation for VS Code, powered by local Whisper. Biases transcription with your workspace symbols so it spells useMemo right, and adapts to whether you're dictating a comment, a commit message, or a prompt.
+Real-time voice dictation for VS Code, powered by self-hosted Whisper through [whisper-flow](https://github.com/dimastatz/whisper-flow). Biases transcription with your workspace symbols so it spells useMemo right, and adapts to whether you're dictating a comment, a commit message, or a prompt.
 
 > **Status: early development.** The extension installs and the dictation command and
 > status bar toggle work, but audio capture and transcription are not implemented yet.
@@ -16,7 +16,8 @@ Real-time voice dictation for VS Code, powered by local Whisper. Biases transcri
 
 While dictating, the status bar item changes to **Dictating**. Toggle again to stop.
 
-Everything runs locally: audio and workspace content never leave your machine.
+Transcription runs on a [whisper-flow](https://github.com/dimastatz/whisper-flow) server that you
+run yourself, on `localhost` by default. No third-party cloud speech service is used.
 
 ## Running from source
 

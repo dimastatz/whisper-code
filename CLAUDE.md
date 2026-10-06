@@ -6,7 +6,7 @@ See [README.md](README.md) for end-user/usage detail; this file is the agent-fac
 ## Project overview
 
 **whisper-code** is a VS Code extension for real-time voice dictation, powered by a
-locally running Whisper model. Two features distinguish it from generic dictation:
+self-hosted [whisper-flow](https://github.com/dimastatz/whisper-flow) streaming server. Two features distinguish it from generic dictation:
 
 - **Workspace-aware vocabulary** — transcription is biased with symbols from the open
   workspace (functions, classes, variables), so identifiers like `useMemo` come out
@@ -21,8 +21,9 @@ locally running Whisper model. Two features distinguish it from generic dictatio
   `stylisticTypeChecked` (`eslint.config.mjs`). Format: Prettier (`.prettierrc.json`).
 - Tests: Mocha via `@vscode/test-cli` / `@vscode/test-electron`; they run inside a
   downloaded VS Code instance (cached in `.vscode-test/`, git-ignored).
-- Whisper inference runs **locally** — do not introduce cloud speech-to-text services
-  or send audio/workspace content off the machine.
+- Transcription goes through **whisper-flow** only (see `docs/specs/0002-*`). Do not
+  bundle a Whisper model or add any other STT engine, and never add third-party cloud STT.
+  Audio goes only to the user-configured whisper-flow server (default `localhost`).
 
 ## Commands
 
