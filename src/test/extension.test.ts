@@ -54,7 +54,10 @@ async function stopDictation(): Promise<void> {
   await waitFor(() => !isRecording());
 }
 
-suite("Extension", () => {
+suite("Extension", function () {
+  // The first editor test waits for the TypeScript server (document symbols) on a cold start.
+  this.timeout(10000);
+
   suiteSetup(async () => {
     const extension = vscode.extensions.getExtension("dimastatz.whisper-code");
     assert.ok(extension, "extension not found");
