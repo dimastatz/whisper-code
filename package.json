@@ -1,7 +1,7 @@
 {
   "name": "whisper-code",
   "displayName": "Whisper Code",
-  "description": "Real-time voice dictation for VS Code, powered by local Whisper.",
+  "description": "Real-time voice dictation for VS Code, powered by a self-hosted whisper-flow server.",
   "version": "0.1.0",
   "publisher": "dimastatz",
   "license": "MIT",
@@ -25,6 +25,16 @@
         "command": "whisperCode.toggleDictation",
         "title": "Toggle Dictation",
         "category": "Whisper Code"
+      },
+      {
+        "command": "whisperCode.setApiKey",
+        "title": "Set API Key",
+        "category": "Whisper Code"
+      },
+      {
+        "command": "whisperCode.clearApiKey",
+        "title": "Clear API Key",
+        "category": "Whisper Code"
       }
     ],
     "keybindings": [
@@ -33,7 +43,35 @@
         "key": "ctrl+alt+d",
         "mac": "cmd+alt+d"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Whisper Code",
+      "properties": {
+        "whisperCode.serverUrl": {
+          "type": "string",
+          "default": "http://localhost:8181",
+          "markdownDescription": "URL of the [whisper-flow](https://github.com/dimastatz/whisper-flow) server. The WebSocket URL is derived from it (`http` \u2192 `ws`, `https` \u2192 `wss`, plus `/ws`). Audio is sent only to this server; a non-local server needs your confirmation once."
+        },
+        "whisperCode.model": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Model for each session, from the server's `GET /ready` `models` list (for example `base.en.pt`). Empty uses the server's default. Needs whisper-flow 1.2 or newer."
+        },
+        "whisperCode.vocabulary.enabled": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Bias transcription toward identifiers from open editors (such as `useMemo` or `getUserById`), and respell them in the inserted text. Sending the vocabulary to the server needs whisper-flow 1.2 or newer."
+        },
+        "whisperCode.recorderCommand": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "markdownDescription": "Command that records the microphone and writes raw 16 kHz mono signed 16-bit little-endian PCM to stdout, for example `[\"sox\", \"-q\", \"-d\", \"-t\", \"raw\", \"-r\", \"16000\", \"-e\", \"signed-integer\", \"-b\", \"16\", \"-c\", \"1\", \"-L\", \"-\"]`. Empty tries `sox`, then `arecord` (Linux) or `ffmpeg`."
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
@@ -53,11 +91,15 @@
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
     "@types/vscode": "^1.95.0",
+    "@types/ws": "^8.18.2",
     "@vscode/test-cli": "^0.0.15",
     "@vscode/test-electron": "^3.1.0",
     "eslint": "^9.25.1",
     "prettier": "^3.9.9",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.31.1"
+  },
+  "dependencies": {
+    "ws": "^8.22.0"
   }
 }

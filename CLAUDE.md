@@ -43,9 +43,18 @@ Press **F5** in VS Code ("Run Extension") to launch the Extension Development Ho
 
 ## Layout
 
-- `src/extension.ts` — entry point (`activate`/`deactivate`); registers
-  `whisperCode.toggleDictation` and the status bar item. Dictation itself is still a stub.
-- `src/test/*.test.ts` — integration tests (Mocha `suite`/`test`).
+- `src/extension.ts` — entry point (`activate`/`deactivate`): commands, settings, consent
+  prompts for non-local servers, the four-state status bar item.
+- `src/dictation/session.ts` — one dictation session (`/ready` → socket → recorder → sink).
+  No `vscode` import; `editorSink.ts` (pending range, decorations) and
+  `workspaceVocabulary.ts` (symbol index) are the `vscode` side.
+- `src/whisperflow/` — whisper-flow protocol: URLs and `/ready` (`server.ts`), server
+  messages and close codes (`messages.ts`), the WebSocket client (`client.ts`).
+- `src/audio/recorder.ts` — microphone sidecar process (sox / arecord / ffmpeg) and framing.
+- `src/text/` — context detector, post-processor, vocabulary. Plain functions.
+- `src/test/*.test.ts` — tests (Mocha `suite`/`test`). `fakeServer.ts` is a fake whisper-flow
+  (real HTTP + WebSocket) and `fakeRecorder.ts` a fake recorder process; no real server or
+  microphone is needed.
 - `docs/specs/` — design specs; start with `0001-overview.md`.
 - `docs/images/` — images referenced from docs.
 
@@ -57,4 +66,8 @@ Press **F5** in VS Code ("Run Extension") to launch the Extension Development Ho
 - Keep coverage at or above 95%: add tests with new code rather than excluding files.
 - Logic that doesn't need the `vscode` API should live in plain modules so it can be
   tested directly.
+- whisper-flow (uvicorn) rejects a handshake with HTTP 403 for both a bad API key and a full
+  server, never close codes 1008/1013; `classifyRejectedHandshake` tells them apart.
+- The `undo` command is a no-op in the test window (it never has OS focus), so undo grouping
+  can't be asserted in tests.
 - Commit on a feature branch and open a PR against `main`; don't push directly to `main`.
