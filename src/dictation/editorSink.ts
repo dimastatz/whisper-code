@@ -1,9 +1,15 @@
 // Editor integration: pending range, decorations, undo grouping (spec 0002: RS-2..RS-6).
 import * as vscode from "vscode";
-import { detectTarget } from "../text/context";
-import { formatFinal, formatPartial } from "../text/format";
+import { commentContinuation, detectTarget } from "../text/context";
+import { formatFinal, formatPartial, wrap } from "../text/format";
 import type { Vocabulary } from "../text/vocabulary";
 import type { TranscriptSink } from "./session";
+
+/** Columns to wrap final text at; 0 turns wrapping off. */
+export interface WrapColumns {
+  comment: number;
+  commitBody: number;
+}
 
 interface Segment {
   editor: vscode.TextEditor;
@@ -26,7 +32,10 @@ export class EditorSink implements TranscriptSink, vscode.Disposable {
   });
   private readonly subscriptions: vscode.Disposable[];
 
-  constructor(private readonly vocabulary: Vocabulary | undefined) {
+  constructor(
+    private readonly vocabulary: Vocabulary | undefined,
+    private readonly wrapColumns: WrapColumns = { comment: 80, commitBody: 72 },
+  ) {
     this.subscriptions = [
       this.decoration,
       vscode.workspace.onDidChangeTextDocument((event) => {
@@ -86,17 +95,27 @@ export class EditorSink implements TranscriptSink, vscode.Disposable {
     const { document } = segment.editor;
     const position = document.positionAt(segment.start);
     const linePrefix = this.linePrefix(segment);
-    const newText = formatFinal(text, {
-      target: detectTarget({
-        languageId: document.languageId,
-        uriScheme: document.uri.scheme,
-        fileName: document.fileName,
-        linePrefix,
-      }),
+    const target = detectTarget({
+      languageId: document.languageId,
+      uriScheme: document.uri.scheme,
+      fileName: document.fileName,
+      linePrefix,
+    });
+    const formatted = formatFinal(text, {
+      target,
       linePrefix,
       firstLine: position.line === 0,
       applyVocabulary: this.applyVocabulary,
     });
+    const eol = document.eol === vscode.EndOfLine.CRLF ? "\r\n" : "\n";
+    let newText = formatted;
+    if (target === "comment") {
+      const continuation = commentContinuation(document.languageId, linePrefix) ?? "";
+      newText = wrap(formatted, linePrefix, this.wrapColumns.comment, continuation, eol);
+    } else if (target === "commit" && position.line > 1) {
+      // The subject (first line) isn't wrapped; the body is.
+      newText = wrap(formatted, linePrefix, this.wrapColumns.commitBody, "", eol);
+    }
     await this.replace(segment, newText, true);
     // The next segment continues right after this one.
     this.segment = {

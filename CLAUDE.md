@@ -52,6 +52,11 @@ Press **F5** in VS Code ("Run Extension") to launch the Extension Development Ho
   messages and close codes (`messages.ts`), the WebSocket client (`client.ts`).
 - `src/audio/recorder.ts` — microphone sidecar process (sox / arecord / ffmpeg) and framing.
 - `src/text/` — context detector, post-processor, vocabulary. Plain functions.
+- `src/dictation/typingSink.ts` — output for inputs that aren't text editors (chat input):
+  types final text with the `type` command.
+- `scripts/e2e.mjs` — end-to-end test against a real whisper-flow (`npm run e2e`, and the
+  manual **E2E** workflow); `scripts/play-wav.mjs` plays `test-fixtures/e2e/*.wav` as a fake mic.
+- `test-fixtures/workspace/` — the workspace the integration tests open (vocabulary scan).
 - `src/test/*.test.ts` — tests (Mocha `suite`/`test`). `fakeServer.ts` is a fake whisper-flow
   (real HTTP + WebSocket) and `fakeRecorder.ts` a fake recorder process; no real server or
   microphone is needed.
@@ -68,6 +73,9 @@ Press **F5** in VS Code ("Run Extension") to launch the Extension Development Ho
   tested directly.
 - whisper-flow (uvicorn) rejects a handshake with HTTP 403 for both a bad API key and a full
   server, never close codes 1008/1013; `classifyRejectedHandshake` tells them apart.
-- The `undo` command is a no-op in the test window (it never has OS focus), so undo grouping
-  can't be asserted in tests.
+- The `undo` and `type` commands are no-ops in the test window (it never has OS focus), so undo
+  grouping can't be asserted in tests. To test typed text, register a `type` command in the test
+  (as Vim-style extensions do) and capture its argument.
+- The chat input (`chatSessionInput` documents) is synced to extensions but never becomes
+  `activeTextEditor`; the keybinding's `inChatInput` `when` clause selects the typing mode.
 - Commit on a feature branch and open a PR against `main`; don't push directly to `main`.

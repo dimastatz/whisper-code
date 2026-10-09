@@ -1,6 +1,6 @@
 # Spec 0001: whisper-code Overview
 
-- **Status:** Draft
+- **Status:** Implemented (unreleased)
 - **Author:** Dima Statz
 - **Created:** 2026-10-05
 
@@ -58,6 +58,14 @@ Microphone ─▶ Audio capture ─▶ whisper-flow    ─▶ Post-processor ─
 
 - ~~Which Whisper runtime?~~ Resolved: whisper-flow ([spec 0002](0002-whisper-flow-transcription.md)).
 - ~~Native helper or webview for the microphone?~~ Resolved: sidecar process (spec 0002, AU-3).
-- Which model should we recommend running in whisper-flow for code dictation?
-- How many symbols fit in Whisper's prompt window, and how do we rank them?
-- How do we detect the commit-message and chat-input targets reliably?
+- Which model should we recommend running in whisper-flow for code dictation? Still open;
+  `tiny.en` works but is weak on identifiers, and the vocabulary prompt only partly makes up for it.
+- ~~How many symbols fit in Whisper's prompt window, and how do we rank them?~~ Resolved: compound
+  identifiers (two or more words) ranked by weighted frequency (active editor and its symbols
+  first, then visible and open editors, then workspace files), up to whisper-flow's 800-character
+  prompt limit, best last because Whisper keeps the end of a long prompt.
+- ~~How do we detect the commit-message and chat-input targets reliably?~~ Resolved: commit
+  messages by language (`git-commit`), scheme (`vscode-scm`) or file name (`COMMIT_EDITMSG`). The
+  chat input is never exposed to extensions as a text editor (its `chatSessionInput` document is
+  synced, but `activeTextEditor` stays on the last code editor), so the dictation keybinding uses
+  the `inChatInput` context key to switch to typing final text into the focused input.

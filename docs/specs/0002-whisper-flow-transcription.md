@@ -1,6 +1,6 @@
 # Spec 0002: whisper-flow as the Transcription Engine
 
-- **Status:** Draft
+- **Status:** Implemented (unreleased; tested with whisper-flow 1.2.1)
 - **Author:** Dima Statz
 - **Created:** 2026-10-06
 - **Updates:** [0001: Overview](0001-overview.md). Answers its "which Whisper runtime" open
@@ -99,17 +99,18 @@ becomes:
 
 ## Dependencies on whisper-flow
 
-These are gaps in whisper-flow 1.1.0 that affect this integration. Most are prerequisites in
-whisper-flow's [docs/vscode.md §4](https://github.com/dimastatz/whisper-flow/blob/main/docs/vscode.md#4-server-side-prerequisites).
+whisper-flow 1.1.0 had gaps that affected this integration. All of them are fixed; the extension
+uses the fixes when the server is 1.2.0 or newer and still works with 1.1.0 (TR-4).
 
-| Gap in 1.1.0                                                                                                      | Impact on whisper-code                                                                                | Blocks                                                                      |
-| ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| **No finalize-on-stop.** When the socket closes, queued audio is dropped and the last partial is never finalized. | The last words of a dictation are lost. Until this is fixed, stop must commit the last partial as-is. | MVP quality ([#39](https://github.com/dimastatz/whisper-flow/issues/39))    |
-| **No `protocol_version`** on `/ready`, and no written protocol.                                                   | TR-4 can only compare the server's package `version`.                                                 | Nothing yet ([#40](https://github.com/dimastatz/whisper-flow/issues/40))    |
-| **No vocabulary prompt.** `transcribe_pcm_chunks` doesn't pass Whisper's `initial_prompt`.                        | Workspace-symbol biasing (spec 0001, goal 2) can't work until the server accepts a prompt.            | Goal 2 ([#41](https://github.com/dimastatz/whisper-flow/issues/41))         |
-| **Fixed model per server** (`WF_MODEL`, default `tiny.en.pt`).                                                    | No per-session model choice; `tiny.en` is weak on code identifiers.                                   | Accuracy ([#42](https://github.com/dimastatz/whisper-flow/issues/42))       |
-| **Window cap.** `WF_MAX_WINDOW_CHUNKS = 1000` (about 64 s).                                                       | A single segment longer than about 64 s loses its beginning.                                          | Long dictation ([#44](https://github.com/dimastatz/whisper-flow/issues/44)) |
-| **Text-based endpointing.** A segment closes when the text is unchanged for two cycles, not on silence.           | Finals can arrive late, so committed text lags behind speech.                                         | Latency ([#43](https://github.com/dimastatz/whisper-flow/issues/43))        |
+| Gap in 1.1.0                                                     | Fixed in                                                                                                |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| No finalize-on-stop: the last words of a dictation were lost.    | 1.2.0, `stop` control frame ([#39](https://github.com/dimastatz/whisper-flow/issues/39))                |
+| No `protocol_version` on `/ready`, no written protocol.          | 1.2.0, `docs/protocol.md` ([#40](https://github.com/dimastatz/whisper-flow/issues/40))                  |
+| No vocabulary prompt (Whisper's `initial_prompt`).               | 1.2.0, `prompt` in the `start` frame ([#41](https://github.com/dimastatz/whisper-flow/issues/41))       |
+| Fixed model per server.                                          | 1.2.0, `model` in the `start` frame ([#42](https://github.com/dimastatz/whisper-flow/issues/42))        |
+| Window cap dropped the start of segments longer than about 64 s. | 1.2.0, the segment is finalized at the cap ([#44](https://github.com/dimastatz/whisper-flow/issues/44)) |
+| Text-based endpointing made finals arrive late.                  | 1.2.0, silence endpointing ([#43](https://github.com/dimastatz/whisper-flow/issues/43))                 |
+| A client dropping mid-transcription leaked its server session.   | 1.2.1 ([#49](https://github.com/dimastatz/whisper-flow/issues/49))                                      |
 
 ## Out of scope
 
@@ -120,10 +121,10 @@ whisper-flow's [docs/vscode.md §4](https://github.com/dimastatz/whisper-flow/bl
 
 ## Open questions
 
-- **Sidecar recorder:** sox via `node-record-lpcm16`, a small native binary, or whisper-flow's
-  `audio/microphone.py` for the first spike?
-- **Vocabulary protocol:** should whisper-flow accept the vocabulary prompt in a JSON control
-  frame at session start (together with `start` / `stop` from whisper-flow prerequisite 1), or as
-  a WebSocket query parameter?
-- **Before finalize-on-stop lands:** commit the last partial on stop, or send a few hundred
-  milliseconds of silence and wait briefly for a final?
+All resolved:
+
+- ~~Sidecar recorder?~~ SoX first, then `arecord` (Linux) or `ffmpeg`, or a user-set
+  `whisperCode.recorderCommand` (AU-4). No Python on the client.
+- ~~Vocabulary protocol?~~ A `prompt` field in whisper-flow's JSON `start` frame (protocol 1).
+- ~~Before finalize-on-stop lands?~~ It landed in whisper-flow 1.2.0: stop sends `stop` and waits
+  for the final. With 1.1.0 the last partial is committed as-is.

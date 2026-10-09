@@ -26,6 +26,14 @@ Dictation works end to end ([spec 0001](docs/specs/0001-overview.md), on
 - Confirmation before sending audio to a non-local server, and a warning without TLS.
 - Status bar states: idle, connecting, recording, error. Errors for a bad API key, a full
   server, and lost connections (with **Retry**).
+- Comment wrapping (`whisperCode.wrap.comments`, default 80) with the comment marker carried to
+  each line, and commit body wrapping (`whisperCode.wrap.commitBody`, default 72).
+- Vocabulary from workspace source files that aren't open (`whisperCode.vocabulary.scanWorkspace`,
+  `whisperCode.vocabulary.maxFiles`).
+- Dictation into the AI chat input: the shortcut, pressed in the chat input, types each final
+  phrase there. VS Code doesn't expose the chat input to extensions as a text editor.
+- A manual **E2E** workflow that runs dictation against whisper-flow in Docker with a recorded
+  WAV (`npm run e2e` locally).
 
 ## [0.1.0] - 2026-10-05
 

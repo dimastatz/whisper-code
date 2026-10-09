@@ -41,7 +41,17 @@
       {
         "command": "whisperCode.toggleDictation",
         "key": "ctrl+alt+d",
-        "mac": "cmd+alt+d"
+        "mac": "cmd+alt+d",
+        "when": "!inChatInput"
+      },
+      {
+        "command": "whisperCode.toggleDictation",
+        "key": "ctrl+alt+d",
+        "mac": "cmd+alt+d",
+        "when": "inChatInput",
+        "args": {
+          "target": "focused"
+        }
       }
     ],
     "configuration": {
@@ -69,6 +79,29 @@
           },
           "default": [],
           "markdownDescription": "Command that records the microphone and writes raw 16 kHz mono signed 16-bit little-endian PCM to stdout, for example `[\"sox\", \"-q\", \"-d\", \"-t\", \"raw\", \"-r\", \"16000\", \"-e\", \"signed-integer\", \"-b\", \"16\", \"-c\", \"1\", \"-L\", \"-\"]`. Empty tries `sox`, then `arecord` (Linux) or `ffmpeg`."
+        },
+        "whisperCode.wrap.comments": {
+          "type": "number",
+          "default": 80,
+          "minimum": 0,
+          "markdownDescription": "Wrap dictated comments at this column, continuing with the comment marker (`// `, ` * `, `# `\u2026). `0` turns wrapping off."
+        },
+        "whisperCode.wrap.commitBody": {
+          "type": "number",
+          "default": 72,
+          "minimum": 0,
+          "markdownDescription": "Wrap dictated commit message bodies at this column. The subject line is never wrapped. `0` turns wrapping off."
+        },
+        "whisperCode.vocabulary.scanWorkspace": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Also collect identifiers from source files in the workspace that aren't open (skipping `node_modules`, build output and similar). Open editors always count more."
+        },
+        "whisperCode.vocabulary.maxFiles": {
+          "type": "number",
+          "default": 500,
+          "minimum": 0,
+          "markdownDescription": "Most workspace files to read for the vocabulary. Files over 200 KB are skipped, and scanning stops after 2 seconds."
         }
       }
     }
@@ -85,7 +118,8 @@
     "test": "vscode-test",
     "pretest:coverage": "npm run compile",
     "test:coverage": "vscode-test --coverage --coverage-reporter text --coverage-reporter json-summary --coverage-reporter lcov --coverage-output coverage && node scripts/check-coverage.mjs 95",
-    "check": "npm run format:check && npm run lint && npm run typecheck && npm run test:coverage"
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm run test:coverage",
+    "e2e": "node scripts/e2e.mjs"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",

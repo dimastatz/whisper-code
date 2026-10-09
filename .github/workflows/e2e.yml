@@ -1,0 +1,50 @@
+name: E2E
+
+# Manual end-to-end run against a real whisper-flow server in Docker (spec 0002, TS-3).
+on:
+  workflow_dispatch:
+    inputs:
+      whisper_flow_ref:
+        description: "whisper-flow git ref to build (tag, branch or commit)"
+        default: "v1.2.1"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    name: Dictation against whisper-flow ${{ inputs.whisper_flow_ref }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run compile
+
+      - name: Build whisper-flow image
+        run: docker build --tag whisperflow "https://github.com/dimastatz/whisper-flow.git#${{ inputs.whisper_flow_ref }}"
+
+      - name: Start whisper-flow
+        run: |
+          docker run --detach --name whisperflow --publish 8181:8181 whisperflow \
+            uvicorn whisperflow.fast_server:app --host 0.0.0.0 --port 8181
+          for i in $(seq 1 120); do
+            if curl --silent --fail http://localhost:8181/ready; then exit 0; fi
+            sleep 2
+          done
+          echo "whisper-flow did not become ready"
+          exit 1
+
+      - name: Run end-to-end test
+        env:
+          WHISPER_FLOW_URL: http://localhost:8181
+        run: npm run e2e
+
+      - name: Server log
+        if: always()
+        run: docker logs whisperflow || true

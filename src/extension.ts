@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { defaultRecorderCommands } from "./audio/recorder";
 import { EditorSink } from "./dictation/editorSink";
+import { TypingSink } from "./dictation/typingSink";
 import { DictationSession, type SessionError, type SessionState } from "./dictation/session";
 import { collectWorkspaceVocabulary } from "./dictation/workspaceVocabulary";
 import {
@@ -17,7 +18,18 @@ let context: vscode.ExtensionContext;
 let statusItem: vscode.StatusBarItem;
 let state: SessionState = "idle";
 let session: DictationSession | undefined;
-let sink: EditorSink | undefined;
+let sink: EditorSink | TypingSink | undefined;
+/** The target of the last session, reused by Retry. */
+let lastTarget: "editor" | "focused" = "editor";
+
+/**
+ * Where text goes. "editor" (the default) inserts at the cursor with live partials. "focused"
+ * types final text into whatever has focus; the keybinding uses it in the chat input, which
+ * VS Code doesn't expose to extensions as a text editor.
+ */
+export interface ToggleOptions {
+  target?: "editor" | "focused";
+}
 /** Set while a toggle is being handled, so a double press doesn't start two sessions. */
 let busy = false;
 
@@ -51,7 +63,7 @@ export function getState(): SessionState {
   return state;
 }
 
-async function toggleDictation(): Promise<void> {
+async function toggleDictation(options?: ToggleOptions): Promise<void> {
   if (busy) {
     return;
   }
@@ -60,14 +72,15 @@ async function toggleDictation(): Promise<void> {
     if (session && isRecording()) {
       await session.stop();
     } else {
-      await startDictation();
+      await startDictation(options?.target ?? "editor");
     }
   } finally {
     busy = false;
   }
 }
 
-async function startDictation(): Promise<void> {
+async function startDictation(target: "editor" | "focused"): Promise<void> {
+  lastTarget = target;
   const config = vscode.workspace.getConfiguration("whisperCode");
   const serverUrl = config.get<string>("serverUrl", "http://localhost:8181");
   try {
@@ -82,9 +95,20 @@ async function startDictation(): Promise<void> {
 
   endSession();
   const useVocabulary = config.get<boolean>("vocabulary.enabled", true);
-  const vocabulary = useVocabulary ? await collectWorkspaceVocabulary() : undefined;
+  const vocabulary = useVocabulary
+    ? await collectWorkspaceVocabulary({
+        scanWorkspace: config.get<boolean>("vocabulary.scanWorkspace", true),
+        maxFiles: config.get<number>("vocabulary.maxFiles", 500),
+      })
+    : undefined;
   const recorderCommand = config.get<string[]>("recorderCommand", []);
-  const currentSink = new EditorSink(vocabulary);
+  const currentSink =
+    target === "focused"
+      ? new TypingSink(vocabulary)
+      : new EditorSink(vocabulary, {
+          comment: config.get<number>("wrap.comments", 80),
+          commitBody: config.get<number>("wrap.commitBody", 72),
+        });
   sink = currentSink;
 
   const current: DictationSession = new DictationSession({
@@ -178,7 +202,7 @@ function showError(error: SessionError): void {
     .showErrorMessage(`Whisper Code: ${error.message}`, ...actions)
     .then((choice) => {
       if (choice === retry) {
-        void toggleDictation();
+        void toggleDictation({ target: lastTarget });
       }
     });
 }
