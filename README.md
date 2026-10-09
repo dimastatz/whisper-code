@@ -19,13 +19,17 @@ step.
 
 Output adapts to where the cursor is:
 
-- **Code comment:** sentences start with a capital letter after the comment marker.
+- **Code comment:** sentences start with a capital letter after the comment marker, and long
+  comments wrap at column 80, continuing with the same marker (`// `, `*`, `# `…).
 - **Commit message** (`COMMIT_EDITMSG`, git commit editor): the subject line has no trailing
-  period.
+  period and isn't wrapped; the body wraps at column 72.
+- **AI chat input** (Copilot Chat and similar): press the same shortcut while the chat input has
+  focus. Each finished phrase is typed into it; partial text isn't shown there.
 - **Anything else** (prose, prompts): inserted as spoken.
 
-Identifiers from your open editors (such as `useMemo` or `getUserById`) are sent to the server
-as a vocabulary hint and respelled in the text, so "use memo" comes out as `useMemo`.
+Identifiers from your workspace (such as `useMemo` or `getUserById`) are sent to the server as a
+vocabulary hint and respelled in the text, so "use memo" comes out as `useMemo`. Open editors
+count most, then other source files in the workspace.
 
 ## Requirements
 
@@ -37,12 +41,16 @@ as a vocabulary hint and respelled in the text, so "use memo" comes out as `useM
 
 ## Settings
 
-| Setting                          | Default                 | Description                                                                                             |
-| -------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------- |
-| `whisperCode.serverUrl`          | `http://localhost:8181` | whisper-flow server. A non-local server asks for your confirmation once, and warns without `https`.     |
-| `whisperCode.model`              | (server default)        | Model from the server's `/ready` list, such as `base.en.pt`.                                            |
-| `whisperCode.vocabulary.enabled` | `true`                  | Bias transcription toward identifiers from open editors.                                                |
-| `whisperCode.recorderCommand`    | (auto)                  | Command that writes raw 16 kHz mono 16-bit little-endian PCM to stdout, if the defaults don't suit you. |
+| Setting                                | Default                 | Description                                                                                             |
+| -------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------- |
+| `whisperCode.serverUrl`                | `http://localhost:8181` | whisper-flow server. A non-local server asks for your confirmation once, and warns without `https`.     |
+| `whisperCode.model`                    | (server default)        | Model from the server's `/ready` list, such as `base.en.pt`.                                            |
+| `whisperCode.vocabulary.enabled`       | `true`                  | Bias transcription toward identifiers from your workspace.                                              |
+| `whisperCode.vocabulary.scanWorkspace` | `true`                  | Also read source files that aren't open (skips `node_modules`, build output and similar).               |
+| `whisperCode.vocabulary.maxFiles`      | `500`                   | Most workspace files to read for the vocabulary.                                                        |
+| `whisperCode.wrap.comments`            | `80`                    | Column to wrap dictated comments at; `0` turns it off.                                                  |
+| `whisperCode.wrap.commitBody`          | `72`                    | Column to wrap commit message bodies at; `0` turns it off.                                              |
+| `whisperCode.recorderCommand`          | (auto)                  | Command that writes raw 16 kHz mono 16-bit little-endian PCM to stdout, if the defaults don't suit you. |
 
 If the server sets `WF_API_KEY`, run **Whisper Code: Set API Key**. The key is kept in VS Code's
 secret storage, not in `settings.json`.

@@ -46,6 +46,39 @@ export function formatFinal(text: string, context: FormatContext): string {
   return separatorBefore(context.linePrefix) + result;
 }
 
+/**
+ * Wraps `text`, inserted after `linePrefix`, so lines stay within `width` columns. Wrapped lines
+ * start with `continuation` (a comment marker, or "" for a commit body). Words longer than a
+ * line are not split. `width` 0 turns wrapping off.
+ */
+export function wrap(
+  text: string,
+  linePrefix: string,
+  width: number,
+  continuation: string,
+  eol = "\n",
+): string {
+  const words = text.trim().split(" ").filter(Boolean);
+  if (width <= 0 || words.length === 0) {
+    return text;
+  }
+  let result = "";
+  let column = linePrefix.length;
+  let joiner = text.startsWith(" ") ? " " : "";
+  for (const word of words) {
+    const lineHasText = column > continuation.length && linePrefix.trim() !== continuation.trim();
+    if (column + joiner.length + word.length > width && (lineHasText || result !== "")) {
+      result += eol + continuation + word;
+      column = continuation.length + word.length;
+    } else {
+      result += joiner + word;
+      column += joiner.length + word.length;
+    }
+    joiner = " ";
+  }
+  return result;
+}
+
 const COMMENT_MARKER_END = /(?:\/\/+|\/\*+|#+|--|;+|%+|<!--)$|^\s*\*$/;
 
 function startsSentence(linePrefix: string, target: Target): boolean {

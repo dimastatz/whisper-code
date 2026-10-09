@@ -85,8 +85,18 @@ export function detectTarget(context: InsertionContext): Target {
 
 /** True when the cursor at the end of `linePrefix` is inside a comment. */
 export function isInComment(languageId: string, linePrefix: string): boolean {
-  if (BLOCK_COMMENT_LANGUAGES.has(languageId) && /^\s*(\/\*\*?|\*)(\s|$)/.test(linePrefix)) {
-    return true;
+  return commentContinuation(languageId, linePrefix) !== undefined;
+}
+
+/**
+ * What a wrapped comment line starts with, e.g. `  // ` or `   * `; undefined when the cursor
+ * isn't in a comment.
+ */
+export function commentContinuation(languageId: string, linePrefix: string): string | undefined {
+  const indent = /^\s*/.exec(linePrefix)?.[0] ?? "";
+  const block = /^\s*(\/\*\*?|\*)(\s|$)/.exec(linePrefix);
+  if (BLOCK_COMMENT_LANGUAGES.has(languageId) && block) {
+    return block[1] === "*" ? `${indent}* ` : `${indent} * `;
   }
   const markers = Object.entries(LINE_COMMENT)
     .filter(([, languages]) => languages.includes(languageId))
@@ -97,11 +107,21 @@ export function isInComment(languageId: string, linePrefix: string): boolean {
   if (languageId === "html" || languageId === "xml" || languageId === "markdown") {
     markers.push("<!--");
   }
-  return markers.length > 0 && findOutsideStrings(linePrefix, markers);
+  const marker = findOutsideStrings(linePrefix, markers);
+  switch (marker) {
+    case undefined:
+      return undefined;
+    case "/*":
+      return `${indent} * `;
+    case "<!--":
+      return indent;
+    default:
+      return `${indent}${marker} `;
+  }
 }
 
-/** Finds any marker that isn't inside a '...', "..." or `...` string literal. */
-function findOutsideStrings(text: string, markers: string[]): boolean {
+/** The first marker that isn't inside a '...', "..." or `...` string literal. */
+function findOutsideStrings(text: string, markers: string[]): string | undefined {
   let quote: string | undefined;
   for (let i = 0; i < text.length; i++) {
     const char = text.charAt(i);
@@ -117,9 +137,10 @@ function findOutsideStrings(text: string, markers: string[]): boolean {
       quote = char;
       continue;
     }
-    if (markers.some((marker) => text.startsWith(marker, i))) {
-      return true;
+    const marker = markers.find((candidate) => text.startsWith(candidate, i));
+    if (marker) {
+      return marker;
     }
   }
-  return false;
+  return undefined;
 }

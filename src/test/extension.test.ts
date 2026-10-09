@@ -2,6 +2,7 @@ import * as assert from "assert";
 import * as vscode from "vscode";
 import { deactivate, getState, isRecording } from "../extension";
 import { FakeWhisperFlow, final, partial, waitFor, type FakeServerOptions } from "./fakeServer";
+import { clearVocabularyCache } from "../dictation/workspaceVocabulary";
 
 const TOGGLE = "whisperCode.toggleDictation";
 
@@ -113,6 +114,115 @@ suite("Extension", function () {
     await stopDictation();
     assert.strictEqual(getState(), "idle");
     assert.deepStrictEqual(fake.controls.at(-1), { type: "stop" });
+  });
+
+  test("wraps dictated comments at the configured column", async () => {
+    await useServer({ events: [final(" fix the cache before the release and retry it.")] });
+    await config().update("wrap.comments", 24, vscode.ConfigurationTarget.Global);
+    try {
+      const editor = await openEditor("  // ");
+      await startDictation();
+      await waitFor(() => editor.document.getText().includes("retry"));
+      assert.strictEqual(
+        editor.document.getText(),
+        "  // Fix the cache\n  // before the release\n  // and retry it.",
+      );
+    } finally {
+      await config().update("wrap.comments", undefined, vscode.ConfigurationTarget.Global);
+    }
+  });
+
+  test("wraps a commit body but not the subject", async () => {
+    const fake = await useServer({
+      events: [
+        final(
+          " this change adds a retry button to every connection error message in the status bar.",
+        ),
+      ],
+    });
+    const editor = await openEditor("Add retry\n\n", "git-commit");
+    await startDictation();
+    await waitFor(() => editor.document.getText().includes("status bar"));
+    assert.strictEqual(
+      editor.document.getText(),
+      "Add retry\n\nThis change adds a retry button to every connection error message in the\nstatus bar.",
+    );
+    await stopDictation();
+
+    // The subject line stays on one line however long it is.
+    fake.options.events = [final(" " + "word ".repeat(20))];
+    const subject = await openEditor("", "git-commit");
+    await startDictation();
+    await waitFor(() => subject.document.getText().length > 0);
+    assert.ok(!subject.document.getText().includes("\n"));
+  });
+
+  test("vocabulary includes identifiers from unopened workspace files", async () => {
+    const fake = await useServer({ events: [] });
+    /** Runs a session and returns the prompt it sent. */
+    const promptOfSession = async (): Promise<string> => {
+      fake.controls.length = 0;
+      await startDictation();
+      await waitFor(() => fake.audioBytes > 0);
+      await stopDictation();
+      const start = fake.controls.find((control) => control.type === "start");
+      return typeof start?.prompt === "string" ? start.prompt : "";
+    };
+
+    clearVocabularyCache();
+    const prompt = await promptOfSession();
+    assert.match(prompt, /fetchUserProfile/);
+    assert.doesNotMatch(prompt, /ignoredDependencyName/);
+    // Cached: the next session doesn't rescan and still has it.
+    assert.match(await promptOfSession(), /fetchUserProfile/);
+
+    try {
+      await config().update("vocabulary.maxFiles", 0, vscode.ConfigurationTarget.Global);
+      clearVocabularyCache();
+      assert.doesNotMatch(await promptOfSession(), /fetchUserProfile/);
+      await config().update("vocabulary.maxFiles", undefined, vscode.ConfigurationTarget.Global);
+      await config().update("vocabulary.scanWorkspace", false, vscode.ConfigurationTarget.Global);
+      clearVocabularyCache();
+      assert.doesNotMatch(await promptOfSession(), /fetchUserProfile/);
+    } finally {
+      await config().update("vocabulary.maxFiles", undefined, vscode.ConfigurationTarget.Global);
+      await config().update(
+        "vocabulary.scanWorkspace",
+        undefined,
+        vscode.ConfigurationTarget.Global,
+      );
+    }
+  });
+
+  test("focused-input mode types final text where the focus is", async () => {
+    // `type` is a no-op in the unfocused test window, so capture it the way Vim-style
+    // extensions do: by registering the command.
+    const typed: string[] = [];
+    const typeCommand = vscode.commands.registerCommand("type", (args: { text: string }) => {
+      typed.push(args.text);
+    });
+    try {
+      const fake = await useServer({ events: [partial(" call"), final(" call use memo")] });
+      await openEditor("useMemo\n");
+      await vscode.commands.executeCommand(TOGGLE, { target: "focused" });
+      await waitFor(() => getState() === "recording");
+      await waitFor(() => typed.length === 1);
+      fake.send(final(" here."));
+      fake.send(final(" "));
+      await waitFor(() => typed.length === 2);
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      assert.deepStrictEqual(typed, ["Call useMemo", " here."]);
+      await stopDictation();
+
+      // Without vocabulary the words are typed as heard.
+      await config().update("vocabulary.enabled", false, vscode.ConfigurationTarget.Global);
+      await vscode.commands.executeCommand(TOGGLE, { target: "focused" });
+      await waitFor(() => typed.length === 3);
+      assert.strictEqual(typed[2], "Call use memo");
+    } finally {
+      typeCommand.dispose();
+      await config().update("vocabulary.enabled", undefined, vscode.ConfigurationTarget.Global);
+    }
   });
 
   test("formats a commit subject", async () => {

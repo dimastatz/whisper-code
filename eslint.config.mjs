@@ -1,7 +1,7 @@
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["out/**", "coverage/**", ".vscode-test/**", "**/*.mjs"] },
+  { ignores: ["out/**", "coverage/**", ".vscode-test/**", "test-fixtures/**", "**/*.mjs"] },
   ...tseslint.configs.strictTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
   {

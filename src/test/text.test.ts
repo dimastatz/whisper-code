@@ -1,6 +1,11 @@
 import * as assert from "assert";
-import { detectTarget, isInComment, type InsertionContext } from "../text/context";
-import { formatFinal, formatPartial, normalize, separatorBefore } from "../text/format";
+import {
+  commentContinuation,
+  detectTarget,
+  isInComment,
+  type InsertionContext,
+} from "../text/context";
+import { formatFinal, formatPartial, normalize, separatorBefore, wrap } from "../text/format";
 import { parseServerMessage, describeClose } from "../whisperflow/messages";
 import {
   buildPrompt,
@@ -218,5 +223,46 @@ suite("Post-processor", () => {
         JSON.stringify(text),
       );
     }
+  });
+});
+
+suite("Wrapping", () => {
+  test("continues comments with their marker and indent", () => {
+    assert.strictEqual(commentContinuation("typescript", "  // "), "  // ");
+    assert.strictEqual(commentContinuation("typescript", "  const a = 1; // "), "  // ");
+    assert.strictEqual(commentContinuation("typescript", "  /** "), "   * ");
+    assert.strictEqual(commentContinuation("typescript", "   * "), "   * ");
+    assert.strictEqual(commentContinuation("typescript", "x /* "), " * ");
+    assert.strictEqual(commentContinuation("python", "    # "), "    # ");
+    assert.strictEqual(commentContinuation("html", "  <!-- "), "  ");
+    assert.strictEqual(commentContinuation("typescript", "const a = 1;"), undefined);
+  });
+
+  test("wraps at the column with the continuation", () => {
+    assert.strictEqual(
+      wrap("Fix the cache before the release", "// ", 20, "// "),
+      "Fix the cache\n// before the\n// release",
+    );
+    assert.strictEqual(
+      wrap(" and then retry it", "  // Some text", 20, "  // ", "\r\n"),
+      " and\r\n  // then retry it",
+    );
+  });
+
+  test("never leaves a comment marker alone on its line", () => {
+    assert.strictEqual(
+      wrap("averyveryverylongword next", "// ", 10, "// "),
+      "averyveryverylongword\n// next",
+    );
+    assert.strictEqual(wrap("averylongword", "", 5, ""), "averylongword");
+  });
+
+  test("breaks after code before a trailing comment", () => {
+    assert.strictEqual(wrap("explain it", "const a = 1; // ", 18, "// "), "\n// explain it");
+  });
+
+  test("is off at width 0 and keeps empty text", () => {
+    assert.strictEqual(wrap(" a b c", "x", 0, ""), " a b c");
+    assert.strictEqual(wrap("", "x", 10, ""), "");
   });
 });
