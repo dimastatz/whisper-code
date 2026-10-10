@@ -68,7 +68,10 @@ Press **F5** in VS Code ("Run Extension") to launch the Extension Development Ho
 - Keep the README user-facing; put contributor/agent detail here.
 - Run `npm run check` before opening a PR. CI (`.github/workflows/ci.yml`) runs the
   same gates on every PR; CodeQL (`codeql.yml`) runs security analysis.
-- Keep coverage at or above 95%: add tests with new code rather than excluding files.
+- Keep coverage at or above 95%: add tests with new code rather than excluding files. Coverage
+  measures `src/` without `src/test/` (tests and fakes don't count), and includes source files
+  that no test loads (`.vscode-test.mjs`). `npm run test:coverage` fails below 95% on lines,
+  statements, functions or branches.
 - Logic that doesn't need the `vscode` API should live in plain modules so it can be
   tested directly.
 - whisper-flow (uvicorn) rejects a handshake with HTTP 403 for both a bad API key and a full
