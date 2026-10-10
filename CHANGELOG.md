@@ -4,7 +4,7 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project follows
 [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [1.0.0] - 2026-10-10
 
 Dictation works end to end ([spec 0001](docs/specs/0001-overview.md), on
 [spec 0002](docs/specs/0002-whisper-flow-transcription.md)).
@@ -34,6 +34,17 @@ Dictation works end to end ([spec 0001](docs/specs/0001-overview.md), on
   phrase there. VS Code doesn't expose the chat input to extensions as a text editor.
 - A manual **E2E** workflow that runs dictation against whisper-flow in Docker with a recorded
   WAV (`npm run e2e` locally).
+- README header with the Whisper Code logo.
+
+### Changed
+
+- The 95% coverage gate measures extension code only; tests and fakes no longer count.
+
+### Security
+
+- `whisperCode.recorderCommand` can only be set in user (machine) settings, not in a
+  workspace's `.vscode/settings.json`, so opening a repository can't make dictation run a
+  command it chose.
 
 ## [0.1.0] - 2026-10-05
 
@@ -49,4 +60,5 @@ transcription are not implemented yet.
 - CI: formatting, type-aware linting, type checking, tests with a 95% coverage gate,
   VSIX packaging, and CodeQL analysis.
 
+[1.0.0]: https://github.com/dimastatz/whisper-code/releases/tag/v1.0.0
 [0.1.0]: https://github.com/dimastatz/whisper-code/releases/tag/v0.1.0

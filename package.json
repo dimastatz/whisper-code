@@ -2,7 +2,7 @@
   "name": "whisper-code",
   "displayName": "Whisper Code",
   "description": "Real-time voice dictation for VS Code, powered by a self-hosted whisper-flow server.",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "publisher": "dimastatz",
   "license": "MIT",
   "repository": {
@@ -78,7 +78,8 @@
             "type": "string"
           },
           "default": [],
-          "markdownDescription": "Command that records the microphone and writes raw 16 kHz mono signed 16-bit little-endian PCM to stdout, for example `[\"sox\", \"-q\", \"-d\", \"-t\", \"raw\", \"-r\", \"16000\", \"-e\", \"signed-integer\", \"-b\", \"16\", \"-c\", \"1\", \"-L\", \"-\"]`. Empty tries `sox`, then `arecord` (Linux) or `ffmpeg`."
+          "markdownDescription": "Command that records the microphone and writes raw 16 kHz mono signed 16-bit little-endian PCM to stdout, for example `[\"sox\", \"-q\", \"-d\", \"-t\", \"raw\", \"-r\", \"16000\", \"-e\", \"signed-integer\", \"-b\", \"16\", \"-c\", \"1\", \"-L\", \"-\"]`. Empty tries `sox`, then `arecord` (Linux) or `ffmpeg`.",
+          "scope": "machine"
         },
         "whisperCode.wrap.comments": {
           "type": "number",
