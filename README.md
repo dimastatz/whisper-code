@@ -1,4 +1,16 @@
-# whisper-code
+<div align="center">
+<h1 align="center"> Whisper Code </h1>
+<h3>Real-Time Voice Dictation for VS Code, Powered by Whisper Flow<br></h3>
+<a href="https://github.com/dimastatz/whisper-code/actions/workflows/ci.yml"><img src="https://github.com/dimastatz/whisper-code/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+<a href="https://github.com/dimastatz/whisper-code/releases"><img src="https://img.shields.io/github/v/release/dimastatz/whisper-code?include_prereleases" alt="Release"></a>
+<img src="https://img.shields.io/badge/VS%20Code-1.95%2B-007ACC" alt="VS Code 1.95+">
+<a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green" alt="MIT license"></a>
+<br>
+<br>
+<kbd>
+<img src="docs/images/whisper-code.png" width="256px" alt="Whisper Code logo: the Whisper Flow surfer with a VS Code badge">
+</kbd>
+</div>
 
 Real-time voice dictation for VS Code, powered by self-hosted Whisper through [whisper-flow](https://github.com/dimastatz/whisper-flow). Biases transcription with your workspace symbols so it spells useMemo right, and adapts to whether you're dictating a comment, a commit message, or a prompt.
 
