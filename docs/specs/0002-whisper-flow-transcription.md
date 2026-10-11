@@ -1,6 +1,6 @@
 # Spec 0002: whisper-flow as the Transcription Engine
 
-- **Status:** Implemented (unreleased; tested with whisper-flow 1.2.1)
+- **Status:** Implemented in 1.0.0 (tested with whisper-flow 1.2.1 and 1.3.0)
 - **Author:** Dima Statz
 - **Created:** 2026-10-06
 - **Updates:** [0001: Overview](0001-overview.md). Answers its "which Whisper runtime" open

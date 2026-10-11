@@ -1,6 +1,6 @@
 # Spec 0001: whisper-code Overview
 
-- **Status:** Implemented (unreleased)
+- **Status:** Implemented in 1.0.0
 - **Author:** Dima Statz
 - **Created:** 2026-10-05
 

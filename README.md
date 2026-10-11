@@ -14,8 +14,8 @@
 
 Real-time voice dictation for VS Code, powered by self-hosted Whisper through [whisper-flow](https://github.com/dimastatz/whisper-flow). Biases transcription with your workspace symbols so it spells useMemo right, and adapts to whether you're dictating a comment, a commit message, or a prompt.
 
-> **Status: preview.** Dictation works end to end against a whisper-flow server. Expect rough
-> edges; see [docs/specs](docs/specs) for the design.
+> Requires a [whisper-flow](https://github.com/dimastatz/whisper-flow) server and a command-line
+> audio recorder; see [Requirements](#requirements). Design docs are in [docs/specs](docs/specs).
 
 ## Usage
 

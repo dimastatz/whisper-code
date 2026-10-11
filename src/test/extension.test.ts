@@ -88,6 +88,17 @@ suite("Extension", function () {
     await vscode.commands.executeCommand("whisperCode.clearApiKey");
   });
 
+  test("a workspace can't set the recorder command", () => {
+    // It names a program to run, so only user (machine) settings may set it.
+    const extension = vscode.extensions.getExtension("dimastatz.whisper-code");
+    const properties = (
+      extension?.packageJSON as {
+        contributes: { configuration: { properties: Record<string, { scope?: string }> } };
+      }
+    ).contributes.configuration.properties;
+    assert.strictEqual(properties["whisperCode.recorderCommand"].scope, "machine");
+  });
+
   test("commands are registered", async () => {
     const commands = await vscode.commands.getCommands(true);
     for (const command of [TOGGLE, "whisperCode.setApiKey", "whisperCode.clearApiKey"]) {
